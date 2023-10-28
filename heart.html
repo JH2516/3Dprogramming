@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semi-Circle Graph on Canvas</title>
+    <style>
+        canvas {
+            float: left;
+            border: 1px solid black;
+        }
+        #UI{
+            
+            border-left: 20px;
+            float: left;
+        }
+        .inputable{
+            width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="450" height="450"></canvas>
+    <script src="h2art.js">
+        
+    </script>
+    <div id="UI">
+        <label for="tX">그릴거</label>
+        <input placeholder="TransX" type="text" class="inputable" id="tX">
+        <input placeholder="TransY" type="text" class="inputable">
+        <input placeholder="TransZ" type="text" id="tZ" class="inputable">
+        <input placeholder="RotateX" type="text" class="inputable">
+        <input placeholder="RotateY" type="text" id="rY" class="inputable">
+        <input placeholder="RotateZ" type="text" class="inputable">
+        <input placeholder="ScaleX" type="text" id="sX" class="inputable">
+        <input placeholder="ScaleY" type="text" id="sY" class="inputable">
+        <input placeholder="ScaleZ" type="text" id="sZ" class="inputable">
+        <button onclick="getInput()">그리기 버튼</button>
+        <button onclick="getInputUndo()">UNDO</button>
+        <button onclick="getInputRedo()">REDO</button>
+    </div>
+
+    <script>
+        var trX;
+        var trY;
+        var roY;
+        var scY;
+        var scX;
+        var undoStack = [];
+        var redoStack = [];
+        var stateStack = [];
+        var redoCount = 0;
+        var redoConf = {trX:0, trY:0, leng:1, amp:1, deg:0};
+        var curConf = {trX:0, trY:0, leng:1, amp:1, deg:0};
+
+        var currentState = Object.assign({}, curConf);
+        stateStack.push(currentState);
+
+        Dheart(ctx,25,200,0,0,1,1,0,0);
+
+        function getInputUndo() {
+            
+            if (stateStack.length > 1) {
+                redoStack.push(stateStack.pop());
+                var previousState = stateStack[stateStack.length - 1];
+                Object.assign(curConf, previousState);
+                
+                trX = curConf.trX;
+                trY = curConf.trY;
+                scX = curConf.leng;
+                scY = curConf.amp;
+                roY = curConf.deg;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            Dheart(ctx,25,200,trX,trY,scX,scY,roY,1);//(x1,y1,tX,tY,len(좌우 늘리기),amp(위아래 늘리기),deg,undo(1))
+        }
+
+        function getInputRedo() {
+            if (redoStack.length > 0) {
+                var nextState = redoStack.pop();
+                Object.assign(curConf, nextState);
+                stateStack.push(nextState);
+
+                trX = curConf.trX;
+                trY = curConf.trY;
+                scX = curConf.leng;
+                scY = curConf.amp;
+                roY = curConf.deg;
+            }
+            
+            console.log("팝",curConf);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            Dheart(ctx,25,200,trX,trY,scX,scY,roY,1);
+        }
+
+        function getInput() {
+            
+            //입력 x는 z로 입력 z는 y로
+            trY = document.getElementById("tX").value;
+            trX = document.getElementById("tZ").value;
+            roY = document.getElementById("rY").value;
+            scY = document.getElementById("sX").value;
+            scX = document.getElementById("sZ").value;
+            trX = parseInt(trX);
+            trY = parseInt(trY);
+            roY = parseFloat(roY);
+            scY = parseFloat(scY);
+            scX = parseFloat(scX);
+
+            curConf.trX = trX;
+            curConf.trY = trY;
+            curConf.leng = scX;
+            curConf.amp = scY;
+            curConf.deg = roY;
+            redoStack = [];
+
+            currentState = Object.assign({}, curConf);
+            stateStack.push(currentState);
+            console.log("푸시",curConf);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            Dheart(ctx,25,200,trX,trY,scX,scY,roY,0);//(x1,y1,tX,tY,len(좌우 늘리기),amp(위아래 늘리기),deg,undo(1))
+        }
+    </script>
+    
+</body>
+
+</html>
